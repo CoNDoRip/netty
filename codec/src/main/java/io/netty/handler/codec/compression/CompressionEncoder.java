@@ -33,12 +33,10 @@ import java.util.concurrent.TimeUnit;
  * Compresses a {@link ByteBuf} using one of compression algorithms.
  */
 public abstract class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
-    /**
-     * Default delay time for close. See method {@link #closeDelay(int)}.
-     */
-    public static final int DEFAULT_CLOSE_DELAY = 10;
 
-    private volatile int closeDelay;
+    private static final long DEFAULT_LAST_WRITE_TIMEOUT_MILLIS = 10;
+
+    private volatile long lastWriteTimeoutMillis;
 
     private final CompressionFormat format;
 
@@ -65,9 +63,8 @@ public abstract class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
      */
     protected CompressionEncoder(CompressionFormat format, boolean preferDirect) {
         super(preferDirect);
-        ObjectUtil.checkNotNull(format, "format");
-        this.format = format;
-        this.closeDelay = DEFAULT_CLOSE_DELAY;
+        this.format = ObjectUtil.checkNotNull(format, "format");;
+        lastWriteTimeoutMillis = DEFAULT_LAST_WRITE_TIMEOUT_MILLIS;
     }
 
     /**
@@ -78,15 +75,23 @@ public abstract class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
     }
 
     /**
+     * Amount of time to be delayed before the ensuring that the channel is closed
+     * after the call of {@link #close(ChannelHandlerContext, ChannelPromise)}.
+     */
+    public final long lastWriteTimeoutMillis() {
+        return lastWriteTimeoutMillis;
+    }
+
+    /**
      * Set amount of time to be delayed before the ensuring that the channel is closed
      * after the call of {@link #close(ChannelHandlerContext, ChannelPromise)}.
      *
-     * The default value is {@link #DEFAULT_CLOSE_DELAY}.
+     * The default value is {@value #DEFAULT_LAST_WRITE_TIMEOUT_MILLIS} milliseconds.
      *
-     * @param delay time in seconds.
+     * @param timeout value in milliseconds.
      */
-    public final void closeDelay(int delay) {
-        closeDelay = delay;
+    public final void setLastWriteTimeoutMillis(long timeout) {
+        lastWriteTimeoutMillis = timeout;
     }
 
     /**
@@ -152,7 +157,7 @@ public abstract class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
                         ctx.close(promise);
                     }
                 }
-            }, closeDelay, TimeUnit.SECONDS);
+            }, lastWriteTimeoutMillis, TimeUnit.MILLISECONDS);
         }
     }
 

@@ -27,8 +27,7 @@ public abstract class CompressionDecoder extends ByteToMessageDecoder {
     private final CompressionFormat format;
 
     protected CompressionDecoder(CompressionFormat format) {
-        ObjectUtil.checkNotNull(format, "format");
-        this.format = format;
+        this.format = ObjectUtil.checkNotNull(format, "format");
     }
 
     /**

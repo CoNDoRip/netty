@@ -21,7 +21,7 @@ import io.netty.util.internal.ObjectUtil;
  * Creates a new {@link CompressionEncoder} or a new {@link CompressionDecoder}
  * with specified {@link CompressionFormat}.
  */
-public final class CompressionCodecFactory {
+public final class CompressionCodecs {
 
     /**
      * Factory method for a new {@link CompressionEncoder}.
@@ -38,8 +38,8 @@ public final class CompressionCodecFactory {
             case DEFLATE:
                 return ZlibCodecFactory.newZlibEncoder(ZlibWrapper.NONE);
             case ZLIB_OR_NONE:
-                throw new UnsupportedOperationException("In case of " + ZlibWrapper.ZLIB_OR_NONE
-                        + " an encoder can not be auto-detected");
+                throw new IllegalArgumentException("format: " + format
+                        + " (" + ZlibWrapper.ZLIB_OR_NONE + " is not allowed for an encoder)");
             case SNAPPY:
                 return new SnappyFrameEncoder();
             case BZIP2:
@@ -53,7 +53,7 @@ public final class CompressionCodecFactory {
             case LZMA:
                 return new LzmaFrameEncoder();
             default:
-                throw new IllegalArgumentException("Format " + format + " is not supported");
+                throw new IllegalArgumentException("format: " + format + " (not supported)");
         }
     }
 
@@ -84,9 +84,9 @@ public final class CompressionCodecFactory {
             case FASTLZ:
                 return new FastLzFrameDecoder();
             default:
-                throw new IllegalArgumentException("Format " + format + " is not supported");
+                throw new IllegalArgumentException("format: " + format + " (not supported)");
         }
     }
 
-    private CompressionCodecFactory() { }
+    private CompressionCodecs() { }
 }
